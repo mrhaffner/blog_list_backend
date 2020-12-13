@@ -18,16 +18,16 @@ blogsRouter.get('/', async (request, response) => {
 //     .catch(error => next(error))
 // })
 
-blogsRouter.post('/', (request, response, next) => {
-  const body = request.body
-
+blogsRouter.post('/', async (request, response) => {
   const blog = new Blog(request.body)
+  // const blog = new Blog({
+  //   title: request.body.title,
+  //   author: request.body.author,
+  //   url: request.body.url
+  // })
 
-  blog.save()
-    .then(savedblog => {
-      response.json(savedblog)
-    })
-    .catch(error => next(error))
+  const savedBlog = await blog.save()
+  response.json(savedBlog)
 })
 
 // blogsRouter.delete('/:id', (request, response, next) => {

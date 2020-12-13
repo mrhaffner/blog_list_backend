@@ -28,12 +28,62 @@ test('all blogs are returned', async () => {
     expect(response.body).toHaveLength(helper.initialBlogs.length)
 })
 
-test('all blogs unique identifier property is named "id"', async () => {
+test('blogs unique identifier property is named "id"', async () => {
     const response = await api.get('/api/blogs')
-    expect(response.body.forEach(res => {
-        res.id.toBeDefined()
-    }))
+    expect(response.body[0].id).toBeDefined()
 })
+
+test('a valid blog can be added', async () => {
+    const newBlog = {
+        title: 'New Blog',
+        author: 'New Author',
+        url: 'http://www.newblog.com',
+        likes: 5000
+    }
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+    
+    const contents = blogsAtEnd.map(n => n.author)
+    expect(contents).toContain(
+        'New Author'
+    )
+})
+
+test('if likes is not included in a post, it defaults to 0', async () => {
+    const newBlog = {
+        title: 'New Blog',
+        author: 'New Author',
+        url: 'http://www.newblog.com',
+    }
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const likes = blogsAtEnd.map(n => n.likes)
+    expect(likes).toContain(0)
+})
+
+test('blog without title or url is not added', async () => {
+    const newBlog = {
+        author: 'New Author',
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  
+    const blogsAtEnd = await helper.blogsInDb()
+  
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
 
 afterAll(() => {
   mongoose.connection.close()
