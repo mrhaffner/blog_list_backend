@@ -7,6 +7,7 @@ const api = supertest(app)
 
 const Blog = require('../models/blog')
 
+const loggedInToken = '';
 beforeEach(async () => {
     await Blog.deleteMany({})
   
